@@ -34,9 +34,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     //If all the user input is accepted, it will take them to the login page. If not, it will explain why
     if ($stmt->execute()) {
-        echo "Successfully registered! (No login.php yet)";
-        //header("Location: login.php");
-        //exit();
+        echo "Successfully registered!";
+        header("Location: login.html");
+        exit();
     } else {
         echo "Error: " . $stmt->error;
     }

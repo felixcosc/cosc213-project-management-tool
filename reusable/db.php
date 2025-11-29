@@ -14,6 +14,6 @@ $connection = new mysqli($host, $user, $pass, $dbname);
 
 // If for whatever reason input is done incorrectly, an error will be printed out describing the problem. It will not continue running if this occurs, requiring a retry
 if($connection->connect_error){
-   die("Connection unable to establish: " . $connection->connect_error);
+   exit("Connection unable to establish: " . $connection->connect_error);
 }
 ?>
