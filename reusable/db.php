@@ -1,9 +1,10 @@
-// This is my reusable database code that will be useful in all parts of my tool that use MySQL.
 
 <?php
+//This is my reusable database code that will be useful all across my tool
+
 
 // My connection settings are stored here
-$host = 'localhost'; // Running on localhost for this
+$host = '127.0.0.1'; // Running on localhost for this
 $user = 'project_user'; // Username for MySQL
 $pass = 'Pass1234'; // Password for project_user
 $dbname = 'project_tool'; // This is the database name
