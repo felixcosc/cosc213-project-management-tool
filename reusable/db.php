@@ -4,9 +4,9 @@
 
 // My connection settings are stored here
 $host = 'localhost'; // Running on localhost for this
-$user = 'root'; // Username for MySQL
-$pass = ''; // Using a blank password
-$dbname = 'project_manager'; // This is the database name
+$user = 'project_user'; // Username for MySQL
+$pass = 'Pass1234'; // Password for project_user
+$dbname = 'project_tool'; // This is the database name
 
 // This is my database object for all future connections
 $connection = new mysqli($host, $user, $pass, $dbname);
