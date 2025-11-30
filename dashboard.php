@@ -6,7 +6,7 @@ session_start();
 // If the user is not logged in, it will let them know they need to be before redirecting them to the login.
 if (!isset($_SESSION['user_id'])) {
     echo "You must be logged in to access the dashboard. Redirecting to login...";
-    header("Refresh: 3, url=login.php");
+    header("Refresh: 3, url=login.html");
     exit();
 }
 

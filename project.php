@@ -50,7 +50,7 @@ $stmt->close();
 </form>
 <br>
 <a href="dashboard.php">Dashboard</a>
-<a href="logout.php">Logout</a>
+<a href="logout.html">Logout</a>
 </body>
 </html>
 
