@@ -1,4 +1,5 @@
 <?php
+// For debugging
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 // Included so I can use my $connection object
@@ -17,7 +18,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $check->bind_param("ss", $username, $email);
     $check->execute();
     $check->store_result();
-
+    
+    // Makes sure the user or email does not exist already
     if ($check->num_rows > 0) {
        echo "Username or email already taken.";
        exit();

@@ -1,4 +1,5 @@
 <?php
+// For debugging
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 session_start();
@@ -22,10 +23,11 @@ $username = $_SESSION['username'];
  <title>Dashboard></title>
 </head>
 <body>
+<!-- Welcomes the user by their username -->
 <h1>Welcome to your Dashboard, <?php echo htmlspecialchars($username);?></h1>
 <p>You are successfully logged in.</p>
 <!-- Placeholder for later-->
-Add projects here
-Add logout button
+<a href="project.php">Projects</a>
+<a href="logout.php">Logout</a>
 </body>
 </html>
