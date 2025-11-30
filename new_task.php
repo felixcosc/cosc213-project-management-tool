@@ -11,7 +11,7 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-// Establishes connection with my database, allows use of $connection
+// Connects to our database so we can use our $connection object
 require_once __DIR__ . '/reusable/db.php';
 
 $user_id = $_SESSION['user_id'];
@@ -61,6 +61,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = trim($_POST['title']);
     $description = trim($_POST['description']);
     $assigned_to = !empty($_POST['assigned_to']) ? intval($_POST['assigned_to']) : null;
+    $status = $_POST['status'] ?? 'todo'; // default to todo
+    $due_date = !empty($_POST['due_date']) ? $_POST['due_date'] : null;
     
     // No empty titles
     if (empty($title)) {
@@ -70,14 +72,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Creates a new task and creates an object
     $stmt = $connection->prepare("
-        INSERT INTO tasks (project_id, title, description, assigned_to)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO tasks (project_id, title, description, assigned_to, status, due_date, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, NOW())
     ");
-    $stmt->bind_param("issi", $project_id, $title, $description, $assigned_to);
+    $stmt->bind_param("isssss", $project_id, $title, $description, $assigned_to, $status, $due_date);
     
-    // If the task is created successfully, redirects to projects.php with the project id in the query string
+    // If the task is created successfully, redirects to view_project.php with the project id in the query string
     if ($stmt->execute()) {
-        header("Location: project.php?id=" . $project_id);
+        header("Location: view_project.php?id=" . $project_id);
         exit;
     } else {
      
@@ -98,10 +100,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <h1>Add Task to <?php echo htmlspecialchars($project['title']); ?></h1>
 <form method="POST" action="">
  <label>Task Title:</label>
- <input type="text" name="title" required><br><br>
+ <input type="text" name="title" required><br>
  
  <label>Description (optional):</label>
- <textarea name="description"></textarea><br><br>
+ <textarea name="description"></textarea><br>
 
  <label>Assign to (optional):</label>
  <!-- This block shows all members of a project so they can be added -->
@@ -114,10 +116,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <?php endforeach; ?>
  </select><br>
 
+ <label>Status:</label>
+ <select name="status">
+  <option value="todo">To-Do</option>
+  <option value="in_progress">In Progress</option>
+  <option value="done">Done</option>
+ </select><br>
+
+ <label>Due Date (optional):</label>
+ <input type="date" name="due_date"><br>
+
  <button type="submit">Add Task</button>
 </form>
 
-<a href="project.php?id=<?php echo $project_id; ?>">Back to Project</a><br>
+<a href="view_project.php?id=<?php echo $project_id; ?>">Back to Project</a><br>
 <a href="dashboard.php">Dashboard</a>
 </body>
 </html>

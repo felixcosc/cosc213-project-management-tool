@@ -1,15 +1,6 @@
-/*
-   During development this gives me a way to wipe
-   my tables when needed. Will not be used during
-   production, strictly a tool for me.
-*/
-DROP TABLE IF EXISTS tasks;
-DROP TABLE IF EXISTS project_members;
-DROP TABLE IF EXISTS projects;
-DROP TABLE IF EXISTS users;
 
 -- Users table with columns for id, username, email, password and created_at
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
 	id INT AUTO_INCREMENT PRIMARY KEY,
 	username VARCHAR(50) NOT NULL UNIQUE,
 	email VARCHAR(100) NOT NULL UNIQUE,
@@ -21,7 +12,7 @@ CREATE TABLE users (
    Projects table. Keeps track of the owner of each project, project name, a description of the project, when it was created and a link to link a user to the owner_id if they own it.
 
 */
-CREATE TABLE projects (
+CREATE TABLE IF NOT EXISTS projects (
 	id INT AUTO_INCREMENT PRIMARY KEY,
 	owner_id INT NOT NULL,
 	title VARCHAR(100) NOT NULL,
@@ -34,7 +25,7 @@ CREATE TABLE projects (
    The members of the project. Keeps track of the associated project, the associated user(s), the role of the user and also a check to make sure the project and the user exists. We use UNIQUE to make sure the same user cannot get added to the same project more than once. This is my join table for the users and projects tables.
 */
 
-CREATE TABLE project_members (
+CREATE TABLE IF NOT EXISTS project_members (
 	id INT AUTO_INCREMENT PRIMARY KEY,
 	project_id INT NOT NULL,
 	user_id INT NOT NULL,
@@ -50,7 +41,7 @@ CREATE TABLE project_members (
 
 */
 
-CREATE TABLE tasks (
+CREATE TABLE IF NOT EXISTS tasks (
 	id INT AUTO_INCREMENT PRIMARY KEY,
 	project_id INT NOT NULL,
 	title VARCHAR(100) NOT NULL,
@@ -63,4 +54,17 @@ CREATE TABLE tasks (
 	FOREIGN KEY (assigned_to) REFERENCES users(id)
 );
 
-
+/*
+   This table stores task_comments data. Each comment has a task_id and user_id. Comment text must
+   be made. created_at stores when the comment was made. The foreign keys make sure the task and user
+   are real.   
+*/
+CREATE TABLE IF NOT EXISTS task_comments (
+	id INT AUTO_INCREMENT PRIMARY KEY,
+	task_id INT NOT NULL,
+	user_id INT NOT NULL,
+	comment TEXT NOT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
+	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);

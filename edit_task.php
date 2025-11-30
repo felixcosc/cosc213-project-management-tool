@@ -1,73 +1,84 @@
 <?php
-
 // For debugging
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 session_start();
 
-// Makes sure the user is logged in
+// Makes sure the user is logged in, if not redirects them to login.html
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php?error=please_login");
+    header("Location: login.html?error=please_login");
     exit;
 }
 
-// Connects us to the database making sure we can use the $connection object
 require_once __DIR__ . '/reusable/db.php';
 
 $user_id = $_SESSION['user_id'];
 
-// Makes sure there is a task ID so the task can be properly edited
+// Makes sure a task ID is provided
 if (!isset($_GET['id']) || empty($_GET['id'])) {
-    echo "Missing task ID.";
+    echo "Task ID missing.";
     exit;
 }
 
 $task_id = intval($_GET['id']);
 
-// Pulls the task, using bind param and a statment object to prevent against SQL injection
-$stmt = $connection->prepare("SELECT t.*, p.owner_id FROM tasks t JOIN projects p ON t.project_id = p.id WHERE t.id = ?");
-$stmt->bind_param("i", $task_id);
+// Fetch task and check if user is allowed to edit it (owner or project member)
+$stmt = $connection->prepare("
+    SELECT t.*, p.owner_id 
+    FROM tasks t 
+    JOIN projects p ON t.project_id = p.id 
+    LEFT JOIN project_members pm ON p.id = pm.project_id AND pm.user_id = ?
+    WHERE t.id = ? AND (p.owner_id = ? OR pm.user_id = ?)
+");
+$stmt->bind_param("iiii", $user_id, $task_id, $user_id, $user_id);
 $stmt->execute();
 $task = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
-// Makes sure the task exists
-if (!$task || $task['owner_id'] != $user_id) {
-    echo "Task not found or you are not the owner.";
+if (!$task) {
+    echo "Task not found.";
     exit;
 }
 
-$project_id = $task['project_id'];
-
-// Pulls the project members of the task if the owner would like to reassign anyone
-$stmt = $connection->prepare("SELECT u.id, u.username FROM project_members pm JOIN users u ON pm.user_id = u.id WHERE pm.project_id = ?");
-$stmt->bind_param("i", $project_id);
+// Fetch project members for assignment dropdown
+$stmt = $connection->prepare("
+    SELECT u.id, u.username 
+    FROM project_members pm 
+    JOIN users u ON pm.user_id = u.id 
+    WHERE pm.project_id = ?
+");
+$stmt->bind_param("i", $task['project_id']);
 $stmt->execute();
 $members_result = $stmt->get_result();
 $members = $members_result->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
-// Assigns all the user input to our variables
+// Will only run if form is submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = trim($_POST['title']);
     $description = trim($_POST['description']);
     $assigned_to = !empty($_POST['assigned_to']) ? intval($_POST['assigned_to']) : null;
-    
-    // No empty tasks
+    $status = $_POST['status'] ?? 'todo'; // <- changed to lowercase enum default
+    $due_date = !empty($_POST['due_date']) ? $_POST['due_date'] : null;
+
     if (empty($title)) {
         echo "Task title cannot be empty.";
         exit;
     }
-    // Safe update of task avoiding SQL injection
-    $stmt = $connection->prepare("UPDATE tasks SET title = ?, description = ?, assigned_to = ? WHERE id = ?");
-    $stmt->bind_param("ssii", $title, $description, $assigned_to, $task_id);
-    // Successful update
+
+    // Update task in database
+    $stmt = $connection->prepare("
+        UPDATE tasks 
+        SET title = ?, description = ?, assigned_to = ?, status = ?, due_date = ? 
+        WHERE id = ?
+    ");
+    $stmt->bind_param("sssssi", $title, $description, $assigned_to, $status, $due_date, $task_id);
+
     if ($stmt->execute()) {
-        header("Location: view_project.php?id=" . $project_id);
+        header("Location: view_project.php?id=" . $task['project_id']);
         exit;
     } else {
-        // An error occured, the user will be told why
-        echo "Error: " . $stmt->error;
+        echo "Error updating task: " . $stmt->error;
     }
     $stmt->close();
 }
@@ -76,34 +87,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>Edit Task: <?php echo htmlspecialchars($task['title']); ?></title>
+ <meta charset="UTF-8">
+ <title>Edit Task: <?php echo htmlspecialchars($task['title']); ?></title>
 </head>
 <body>
 <h1>Edit Task: <?php echo htmlspecialchars($task['title']); ?></h1>
 
+<!-- Task editing form -->
 <form method="POST" action="">
-    <label>Task Title:</label>
-    <input type="text" name="title" value="<?php echo htmlspecialchars($task['title']); ?>" required><br><br>
+ <label>Task Title:</label>
+ <input type="text" name="title" value="<?php echo htmlspecialchars($task['title']); ?>" required><br>
 
-    <label>Description (optional):</label>
-    <textarea name="description"><?php echo htmlspecialchars($task['description']); ?></textarea><br><br>
+ <label>Description (optional):</label>
+ <textarea name="description"><?php echo htmlspecialchars($task['description']); ?></textarea><br>
 
-    <label>Assign to (optional):</label>
-    <select name="assigned_to">
-        <option value="">-- None --</option>
-        <?php foreach ($members as $member): ?>
-            <option value="<?php echo $member['id']; ?>" <?php echo ($task['assigned_to'] == $member['id']) ? 'selected' : ''; ?>>
-                <?php echo htmlspecialchars($member['username']); ?>
-            </option>
-        <?php endforeach; ?>
-    </select><br><br>
+ <label>Assign to (optional):</label>
+ <select name="assigned_to">
+  <option value="">-- None --</option>
+  <?php foreach ($members as $member): ?>
+   <option value="<?php echo $member['id']; ?>" <?php if ($member['id'] == $task['assigned_to']) echo 'selected'; ?>>
+    <?php echo htmlspecialchars($member['username']); ?>
+   </option>
+  <?php endforeach; ?>
+ </select><br>
 
-    <button type="submit">Update Task</button>
+ <label>Status:</label>
+ <select name="status">
+  <option value="todo" <?php if ($task['status'] == 'todo') echo 'selected'; ?>>To-Do</option>
+  <option value="in_progress" <?php if ($task['status'] == 'in_progress') echo 'selected'; ?>>In Progress</option>
+  <option value="done" <?php if ($task['status'] == 'done') echo 'selected'; ?>>Done</option>
+ </select><br>
+
+ <label>Due Date (optional):</label>
+ <input type="date" name="due_date" value="<?php echo htmlspecialchars($task['due_date']); ?>"><br>
+
+ <button type="submit">Update Task</button>
 </form>
 
-<br>
-<a href="view_project.php?id=<?php echo $project_id; ?>">Back to Project</a>
+<a href="view_project.php?id=<?php echo $task['project_id']; ?>">Back to Project</a><br>
 <a href="dashboard.php">Dashboard</a>
 </body>
 </html>
