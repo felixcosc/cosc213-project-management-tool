@@ -12,7 +12,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // Establishes connection with my database, allows use of $connection
-require_once __DIR__ '/reusable/db.php';
+require_once __DIR__ . '/reusable/db.php';
 
 $user_id = $_SESSION['user_id'];
 
@@ -98,10 +98,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <h1>Add Task to <?php echo htmlspecialchars($project['title']); ?></h1>
 <form method="POST" action="">
  <label>Task Title:</label>
- <input type="text" name="title" required<br>
+ <input type="text" name="title" required><br><br>
  
  <label>Description (optional):</label>
- <textarea name="description></textarea><br>
+ <textarea name="description"></textarea><br><br>
 
  <label>Assign to (optional):</label>
  <!-- This block shows all members of a project so they can be added -->
@@ -109,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <option value="">-- None --</option>
   <?php foreach ($members as $member): ?>
    <option value="<?php echo $member['id']; ?>">
-    <?php echo htmlspecialchars($member['member']); ?>
+    <?php echo htmlspecialchars($member['username']); ?>
    </option>
   <?php endforeach; ?>
  </select><br>

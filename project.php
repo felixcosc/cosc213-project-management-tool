@@ -43,7 +43,8 @@ $stmt->close();
       <?php foreach ($projects as $project): ?>
           <li>
             <?php echo htmlspecialchars($project['title']); ?>
-            - <a href="project_view.php?id=<?php echo $project['id']; ?>"View Tasks</a>
+            - <a href="view_project.php?id=<?php echo $project['id']; ?>">View Tasks</a>
+            - <a href="new_task.php?project_id=<?php echo $project['id']; ?>">Add New Task</a>
             - <a href="edit_project.php?id=<?php echo $project['id']; ?>">Edit Project</a>
             - <a href="delete_project.php?id=<?php echo $project['id']; ?>">Delete Project</a>
           </li>
