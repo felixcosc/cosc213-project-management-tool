@@ -33,7 +33,7 @@ $stmt->close();
 
 // Makes sure the task exists
 if (!$task || $task['owner_id'] != $user_id) {
-    echo "Task not found.";
+    echo "Task not found or you are not the owner.";
     exit;
 }
 

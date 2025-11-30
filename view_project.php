@@ -2,7 +2,6 @@
 // For debugging
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-
 session_start();
 
 // Makes sure the user is logged in, if not redirects them to login.html
@@ -22,9 +21,18 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
 
 $project_id = intval($_GET['id']);
 
-// Verifies user ownership of project, going through prepare as security against SQL injection
-$stmt = $connection->prepare("SELECT * FROM projects WHERE id = ? AND owner_id = ?");
-$stmt->bind_param("ii", $project_id, $user_id);
+// Check if user is owner or member
+$stmt = $connection->prepare("
+    SELECT p.*, 'owner' AS role
+    FROM projects p
+    WHERE p.id = ? AND p.owner_id = ?
+    UNION
+    SELECT p.*, 'member' AS role
+    FROM projects p
+    JOIN project_members pm ON p.id = pm.project_id
+    WHERE p.id = ? AND pm.user_id = ?
+");
+$stmt->bind_param("iiii", $project_id, $user_id, $project_id, $user_id);
 $stmt->execute();
 $project = $stmt->get_result()->fetch_assoc();
 $stmt->close();
@@ -34,6 +42,7 @@ if (!$project) {
     echo "Project not found.";
     exit;
 }
+
 // Pulls all tasks for the given project. Wildcarded tasks table as we are using all values
 $stmt = $connection->prepare("SELECT t.*,  u.username AS assigned_username FROM tasks t LEFT JOIN users u ON t.assigned_to = u.id WHERE t.project_id = ?");
 $stmt->bind_param("i", $project_id);
@@ -41,17 +50,27 @@ $stmt->execute();
 $result = $stmt->get_result();
 $tasks = $result->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
+
+// Pulls the project members
+$stmt = $connection->prepare("SELECT u.id, u.username FROM project_members pm JOIN users u ON pm.user_id = u.id WHERE pm.project_id = ?");
+$stmt->bind_param("i", $project_id);
+$stmt->execute();
+$members_result = $stmt->get_result();
+$members = $members_result->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
  <meta charset="UTF-8">
- <title>Tasks for project <?php echo htmlspecialchars($project['title']); ?></title>
+ <title>Project <?php echo htmlspecialchars($project['title']); ?></title>
 </head>
 <body>
-<h1>Tasks for project <?php echo htmlspecialchars($project['title']); ?></h1>
-<a href="task_add.php?project_id=<?php echo $project_id; ?>">Add New Task</a><br>
+<h1>Project: <?php echo htmlspecialchars($project['title']); ?></h1>
+
+<h2>Tasks</h2>
+<a href="new_task.php?project_id=<?php echo $project_id; ?>">Add New Task</a><br>
 <?php if (empty($tasks)): ?>
  <p>No tasks found for this project.</p>
 <?php else: ?>
@@ -75,6 +94,21 @@ $stmt->close();
   <?php endforeach; ?>
  </table>
 <?php endif; ?>
+
+<h2>Project Members</h2>
+<ul>
+<?php foreach ($members as $member): ?>
+    <li><?php echo htmlspecialchars($member['username']); ?></li>
+<?php endforeach; ?>
+</ul>
+
+<h3>Add Member</h3>
+<form method="POST" action="add_project_member.php">
+    <input type="hidden" name="project_id" value="<?php echo $project_id; ?>">
+    <input type="text" name="username" placeholder="Username of member" required>
+    <button type="submit">Add Member</button>
+</form>
+
 <br>
 <a href="project.php">Back to Projects</a>
 <a href="dashboard.php">Dashboard</a>

@@ -32,7 +32,7 @@ $task = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 // In case the task in question cannot be found
 if (!$task || $task['owner_id'] != $user_id) {
-    echo "Task not found.";
+    echo "Task not found or you are not the owner.";
     exit;
 }
 
