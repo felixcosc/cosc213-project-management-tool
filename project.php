@@ -41,9 +41,11 @@ $stmt->close();
       <!-- Options for editing or deleting their project. Tells them the name of each one -->
       <ul>
       <?php foreach ($projects as $project): ?>
-          <li><?php echo htmlspecialchars($project['title']); ?>
-          - <a href="edit_project.php?id=<?php echo $project['id']; ?>">Edit Project</a>
-          <a href="delete_project.php?id=<?php echo $project['id']; ?>">Delete Project</a>
+          <li>
+            <?php echo htmlspecialchars($project['title']); ?>
+            - <a href="project_view.php?id=<?php echo $project['id']; ?>"View Tasks</a>
+            - <a href="edit_project.php?id=<?php echo $project['id']; ?>">Edit Project</a>
+            - <a href="delete_project.php?id=<?php echo $project['id']; ?>">Delete Project</a>
           </li>
       <?php endforeach?>
       </ul>
