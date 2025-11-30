@@ -39,7 +39,7 @@ $stmt->close();
 </head>
 <body>
 <!-- Welcomes the user to their projects by username -->
-<h1>Welcome to your projects, <?php echo htmlspecialchars($_SESSION['username']); ?></h1>
+<h1>Welcome to your Project Dashboard, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h1>
 <h2>My Projects</h2>
 <?php if (empty($projects)): ?>
       <!-- If their project list is empty it lets them know -->
@@ -70,7 +70,6 @@ $stmt->close();
 </form>
 <!-- Navigation tools -->
 <br>
-<a href="dashboard.php">Dashboard</a>
 <a href="logout.php">Logout</a>
 </body>
 </html>

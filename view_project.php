@@ -22,18 +22,18 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
 
 $project_id = intval($_GET['id']);
 
-// Corrected project membership check
+// Corrected project membership check using UNION wrapped for LIMIT
 $stmt = $connection->prepare("
-    SELECT p.*
-    FROM projects p
-    LEFT JOIN project_members pm
-        ON p.id = pm.project_id
-        AND pm.user_id = ?
-    WHERE p.id = ?
-      AND (p.owner_id = ? OR pm.user_id IS NOT NULL)
-    LIMIT 1
+SELECT * FROM (
+    (SELECT * FROM projects WHERE id = ? AND owner_id = ?)
+    UNION
+    (SELECT p.* FROM projects p
+     JOIN project_members pm ON p.id = pm.project_id
+     WHERE p.id = ? AND pm.user_id = ?)
+) AS combined
+LIMIT 1
 ");
-$stmt->bind_param("iii", $user_id, $project_id, $user_id);
+$stmt->bind_param("iiii", $project_id, $user_id, $project_id, $user_id);
 $stmt->execute();
 $project = $stmt->get_result()->fetch_assoc();
 $stmt->close();
@@ -78,6 +78,28 @@ $stmt->execute();
 $members_result = $stmt->get_result();
 $members = $members_result->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
+
+// Pull comments for tasks in this project
+$stmt = $connection->prepare("
+SELECT tc.*, u.username 
+FROM task_comments tc 
+JOIN users u ON tc.user_id = u.id 
+WHERE tc.task_id IN (
+    SELECT id FROM tasks WHERE project_id = ?
+)
+ORDER BY tc.created_at ASC
+");
+$stmt->bind_param("i", $project_id);
+$stmt->execute();
+$comments_result = $stmt->get_result();
+$comments_raw = $comments_result->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
+
+// Organize comments by task_id
+$comments = [];
+foreach ($comments_raw as $comment) {
+    $comments[$comment['task_id']][] = $comment;
+}
 ?>
 
 <!DOCTYPE html>
@@ -105,6 +127,7 @@ $stmt->close();
                 <th>Status</th>
                 <th>Due Date</th>
                 <th>Actions</th>
+                <th>Comments</th>
             </tr>
             <?php foreach ($status_tasks as $task): ?>
                 <tr>
@@ -116,6 +139,24 @@ $stmt->close();
                     <td>
                         <a href="edit_task.php?id=<?php echo $task['id']; ?>">Edit</a>
                         <a href="delete_task.php?id=<?php echo $task['id']; ?>&project_id=<?php echo $project_id; ?>">Delete</a>
+                    </td>
+                    <td>
+                        <?php if (!empty($comments[$task['id']])): ?>
+                            <ul>
+                            <?php foreach ($comments[$task['id']] as $comment): ?>
+                                <li><strong><?php echo htmlspecialchars($comment['username']); ?>:</strong> <?php echo htmlspecialchars($comment['comment']); ?></li>
+                            <?php endforeach; ?>
+                            </ul>
+                        <?php else: ?>
+                            <em>No comments</em>
+                        <?php endif; ?>
+
+                        <!-- Add comment form -->
+                        <form method="POST" action="add_task_comment.php">
+                            <input type="hidden" name="task_id" value="<?php echo $task['id']; ?>">
+                            <input type="text" name="comment" placeholder="Add a comment" required>
+                            <button type="submit">Post</button>
+                        </form>
                     </td>
                 </tr>
             <?php endforeach; ?>
@@ -140,6 +181,6 @@ $stmt->close();
 
 <br>
 <a href="project.php">Back to Projects</a>
-<a href="dashboard.php">Dashboard</a>
+<a href="logout.php">Logout</a>
 </body>
 </html>
