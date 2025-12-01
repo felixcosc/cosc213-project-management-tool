@@ -8,7 +8,7 @@ session_start();
 
 // If the user is not logged in, they are redirected after this point, allowing me to use cleaner code later on
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php?error=please_login");
+    header("Location: login.html?error=please_login");
     exit;
 }
 
@@ -17,7 +17,7 @@ require_once __DIR__ . '/reusable/db.php';
 
 $user_id = $_SESSION['user_id'];
 
-// Grabbing all projects of that particular user or where they are a member. Going the bind parameter route again to prevent SQL injection
+// Grabbing all projects of the particular user or where they are a member of the project. Going the bind parameter route again to prevent SQL injection
 $stmt = $connection->prepare("
     SELECT *, 'owner' AS role FROM projects WHERE owner_id = ?
     UNION

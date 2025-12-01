@@ -11,6 +11,7 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+// Connects to our database so we can use our $connection object
 require_once __DIR__ . '/reusable/db.php';
 
 $user_id = $_SESSION['user_id'];
@@ -22,7 +23,7 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
 
 $project_id = intval($_GET['id']);
 
-// Corrected project membership check using UNION wrapped for LIMIT
+// Makes sure the user is either the owner or a member of the project before giving them access
 $stmt = $connection->prepare("
 SELECT * FROM (
     (SELECT * FROM projects WHERE id = ? AND owner_id = ?)
@@ -39,7 +40,7 @@ $project = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
 if (!$project) {
-    echo "Project not found.";
+    echo "Project not found or you do not have permission to do this.";
     exit;
 }
 
@@ -56,7 +57,7 @@ $result = $stmt->get_result();
 $tasks_raw = $result->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
-// Group tasks by status — FIXED enum values
+// Groups all of the tasks based on their status
 $tasks = [];
 foreach ($tasks_raw as $task) {
     $status = $task['status'] ?? 'todo';

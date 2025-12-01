@@ -35,9 +35,9 @@ $result = $stmt->get_result();
 $project = $result->fetch_assoc();
 $stmt->close();
 
-// If the project cannot be found
+// If the project cannot be found or the user does not have permission
 if (!$project) {
-    echo "Project not found.";
+    echo "Project not found or you do not have permission to do this.";
     exit;
 }
 
@@ -80,7 +80,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <br>
 <!-- Nav tools -->
 <a href="project.php">Back to Projects</a>
-<a href="dashboard.php">Dashboard</a>
 <a href="logout.php">Logout</a>
 </body>
 </html>

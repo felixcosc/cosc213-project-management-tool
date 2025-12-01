@@ -10,6 +10,7 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+// Connects to the database so we can use our $connection object
 require_once __DIR__ . '/reusable/db.php';
 
 $user_id = $_SESSION['user_id'];
@@ -36,17 +37,18 @@ $task = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
 if (!$task) {
-    echo "Task not found.";
+    echo "Task not found or you do not have permission to do this.";
     exit;
 }
 
-// Fetch project members for assignment dropdown
+// Pulls all the project members
 $stmt = $connection->prepare("
     SELECT u.id, u.username 
     FROM project_members pm 
     JOIN users u ON pm.user_id = u.id 
     WHERE pm.project_id = ?
 ");
+// Statment object and bind_param to prevent SQL injection
 $stmt->bind_param("i", $task['project_id']);
 $stmt->execute();
 $members_result = $stmt->get_result();
@@ -66,18 +68,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // Update task in database
+    // Updates the task in our database
     $stmt = $connection->prepare("
         UPDATE tasks 
         SET title = ?, description = ?, assigned_to = ?, status = ?, due_date = ? 
         WHERE id = ?
     ");
     $stmt->bind_param("sssssi", $title, $description, $assigned_to, $status, $due_date, $task_id);
-
+    // Successfully edits the task
     if ($stmt->execute()) {
         header("Location: view_project.php?id=" . $task['project_id']);
         exit;
     } else {
+        // Issue updating the task, tells the user why
         echo "Error updating task: " . $stmt->error;
     }
     $stmt->close();
@@ -93,14 +96,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 <h1>Edit Task: <?php echo htmlspecialchars($task['title']); ?></h1>
 
-<!-- Task editing form -->
+<!-- Form for editing the task -->
 <form method="POST" action="">
  <label>Task Title:</label>
  <input type="text" name="title" value="<?php echo htmlspecialchars($task['title']); ?>" required><br>
-
+ 
+ <!-- Adding a description -->
  <label>Description (optional):</label>
  <textarea name="description"><?php echo htmlspecialchars($task['description']); ?></textarea><br>
-
+ 
+ <!-- Assigning to a specific user -->
  <label>Assign to (optional):</label>
  <select name="assigned_to">
   <option value="">-- None --</option>
@@ -110,14 +115,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
    </option>
   <?php endforeach; ?>
  </select><br>
-
+ 
+ <!-- Sets the status of the task -->
  <label>Status:</label>
  <select name="status">
   <option value="todo" <?php if ($task['status'] == 'todo') echo 'selected'; ?>>To-Do</option>
   <option value="in_progress" <?php if ($task['status'] == 'in_progress') echo 'selected'; ?>>In Progress</option>
   <option value="done" <?php if ($task['status'] == 'done') echo 'selected'; ?>>Done</option>
  </select><br>
-
+ 
+ <!-- Sets the due date -->
  <label>Due Date (optional):</label>
  <input type="date" name="due_date" value="<?php echo htmlspecialchars($task['due_date']); ?>"><br>
 
@@ -125,6 +132,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </form>
 
 <a href="view_project.php?id=<?php echo $task['project_id']; ?>">Back to Project</a><br>
-<a href="dashboard.php">Dashboard</a>
+<a href="project.php">Project Dashboard</a>
 </body>
 </html>

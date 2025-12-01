@@ -37,9 +37,9 @@ $stmt->bind_param("iii", $user_id, $task_id, $user_id);
 $stmt->execute();
 $task = $stmt->get_result()->fetch_assoc();
 $stmt->close();
-// In case the task cannot be found
+// In case the task cannot be found or the user does not have permission
 if (!$task) {
-    echo "Task not found.";
+    echo "Task not found or you do not have permission.";
     exit;
 }
 

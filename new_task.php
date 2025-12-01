@@ -32,9 +32,9 @@ $stmt->execute();
 $project = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
-// If the project is not found the script will not run
+// If the project is not found or the user does not have permission the script will not run
 if (!$project) {
-    echo "Project not found.";
+    echo "Project not found or you do not have permission to do this.";
     exit;
 }
 
@@ -103,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
  <input type="text" name="title" required><br>
  
  <label>Description (optional):</label>
- <textarea name="description"></textarea><br>
+ <textarea name="description"></textarea><br><br>
 
  <label>Assign to (optional):</label>
  <!-- This block shows all members of a project so they can be added -->
@@ -114,22 +114,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php echo htmlspecialchars($member['username']); ?>
    </option>
   <?php endforeach; ?>
- </select><br>
+ </select><br><br>
 
  <label>Status:</label>
  <select name="status">
   <option value="todo">To-Do</option>
   <option value="in_progress">In Progress</option>
   <option value="done">Done</option>
- </select><br>
+ </select><br><br>
 
  <label>Due Date (optional):</label>
- <input type="date" name="due_date"><br>
+ <input type="date" name="due_date"><br><br>
 
  <button type="submit">Add Task</button>
 </form>
 
-<a href="view_project.php?id=<?php echo $project_id; ?>">Back to Project</a><br>
-<a href="dashboard.php">Dashboard</a>
+<br><a href="view_project.php?id=<?php echo $project_id; ?>">Back to Project</a><br>
+<a href="logout.php">Logout</a>
 </body>
 </html>

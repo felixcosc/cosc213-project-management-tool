@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->close();
 
     if (!$project) {
-        echo "Project not found.";
+        echo "Project not found or you do not have permission to do this.";
         exit;
     }
 
@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Can not find the user
     if (!$user) {
-        echo "User not found.";
+        echo "User not found. Please enter a valid user";
         exit;
     }
 

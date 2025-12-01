@@ -30,8 +30,8 @@ CREATE TABLE IF NOT EXISTS project_members (
 	project_id INT NOT NULL,
 	user_id INT NOT NULL,
 	role VARCHAR(50) DEFAULT 'member',
-	FOREIGN KEY (project_id) REFERENCES projects(id),
-	FOREIGN KEY (user_id) REFERENCES users(id),
+	FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE, 
+	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 	UNIQUE(project_id, user_id)
 );
 
@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS tasks (
 	assigned_to INT DEFAULT NULL,
 	due_date DATE DEFAULT NULL,
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-	FOREIGN KEY (project_id) REFERENCES projects(id),
+	FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
 	FOREIGN KEY (assigned_to) REFERENCES users(id)
 );
 
