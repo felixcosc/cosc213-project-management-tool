@@ -1,0 +1,128 @@
+/* For my body */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* For my headers */
+h1, h2, h3 {
+    color: #222;
+    margin-bottom: 10px;
+}
+
+/* For any links */
+a {
+    color: #007bff;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+
+/* For my forms */
+form {
+    background-color: #fff;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    max-width: 600px;
+    margin-bottom: 20px;
+}
+label {
+    display: block;
+    margin-top: 10px;
+    font-weight: bold;
+}
+input[type="text"],
+input[type="password"],
+input[type="date"],
+textarea,
+select {
+    width: 100%;
+    padding: 6px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+textarea {
+    resize: vertical;
+}
+
+/* For my buttons */
+button {
+    margin-top: 10px;
+    padding: 8px 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+button:hover {
+    background-color: #0056b3;
+}
+
+/* Any disabled inputs that a member would see when trying to edit a task */
+input[disabled],
+textarea[disabled],
+select[disabled] {
+    background-color: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+/* For my tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    background-color: #fff;
+}
+th, td {
+    padding: 8px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+th {
+    background-color: #f1f1f1;
+}
+
+/* For my lists */ 
+ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+ul li {
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+}
+
+/* For login and registration */
+.login-container {
+    width: 300px;
+    margin: 50px auto;
+    text-align: center;
+}
+.login-container form {
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.login-container h1 {
+    margin-bottom: 20px;
+}
+.login-container p {
+    margin-top: 15px;
+}
+.login-container a {
+    color: #007bff;
+}
+.login-container a:hover {
+    text-decoration: underline;
+}

@@ -65,6 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html>
 <head>
+ <link rel="stylesheet" href="reusable/styles.css">
  <meta charset="UTF-8">
  <!-- Telling the user what project they are editing -->
  <title>Edit Project - <?php echo htmlspecialchars($project['title']); ?></title>

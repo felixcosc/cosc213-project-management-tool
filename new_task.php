@@ -93,6 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html>
 <head>
+ <link rel="stylesheet" href="reusable/styles.css">
  <meta charset="UTF-8">
  <title>Add Task to <?php echo htmlspecialchars($project['title']); ?></title>
 </head>

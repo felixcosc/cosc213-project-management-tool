@@ -119,6 +119,7 @@ foreach ($comments_raw as $comment) {
 <!DOCTYPE html>
 <html>
 <head>
+ <link rel="stylesheet" href="reusable/styles.css">
  <meta charset="UTF-8">
  <title>Project <?php echo htmlspecialchars($project['title']); ?></title>
 </head>

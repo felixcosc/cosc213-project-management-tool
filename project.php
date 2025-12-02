@@ -34,6 +34,7 @@ $stmt->close();
 <!DOCTYPE html>
 <html>
 <head>
+ <link rel="stylesheet" href="reusable/styles.css">
  <meta charset="UTF-8">
  <title>My Projects</title>
 </head>
