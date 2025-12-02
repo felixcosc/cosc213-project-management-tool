@@ -48,6 +48,9 @@ $stmt = $connection->prepare("
     JOIN users u ON pm.user_id = u.id 
     WHERE pm.project_id = ?
 ");
+// Variable for doing an admin check
+$is_admin = ($task['owner_id'] == $user_id);
+
 // Statment object and bind_param to prevent SQL injection
 $stmt->bind_param("i", $task['project_id']);
 $stmt->execute();
@@ -99,15 +102,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!-- Form for editing the task -->
 <form method="POST" action="">
  <label>Task Title:</label>
- <input type="text" name="title" value="<?php echo htmlspecialchars($task['title']); ?>" required><br>
+ <input type="text" name="title" value="<?php echo htmlspecialchars($task['title']); ?>" required <?= (!$is_admin) ? 'disabled' : '' ?>><br>
  
  <!-- Adding a description -->
  <label>Description (optional):</label>
- <textarea name="description"><?php echo htmlspecialchars($task['description']); ?></textarea><br>
+ <textarea name="description" <?= (!$is_admin) ? 'disabled' : '' ?>><?php echo htmlspecialchars($task['description']); ?></textarea><br>
  
  <!-- Assigning to a specific user -->
  <label>Assign to (optional):</label>
- <select name="assigned_to">
+ <select name="assigned_to" <?= (!$is_admin) ? 'disabled' : '' ?>>
   <option value="">-- None --</option>
   <?php foreach ($members as $member): ?>
    <option value="<?php echo $member['id']; ?>" <?php if ($member['id'] == $task['assigned_to']) echo 'selected'; ?>>
@@ -126,7 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
  
  <!-- Sets the due date -->
  <label>Due Date (optional):</label>
- <input type="date" name="due_date" value="<?php echo htmlspecialchars($task['due_date']); ?>"><br>
+ <input type="date" name="due_date" value="<?php echo htmlspecialchars($task['due_date']); ?>" <?= (!$is_admin) ? 'disabled' : '' ?>><br>
 
  <button type="submit">Update Task</button>
 </form>

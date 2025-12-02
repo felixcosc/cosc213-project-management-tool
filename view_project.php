@@ -69,16 +69,29 @@ foreach ($tasks_raw as $task) {
 
 // Pull project members
 $stmt = $connection->prepare("
-SELECT u.id, u.username 
-FROM project_members pm 
-JOIN users u ON pm.user_id = u.id 
-WHERE pm.project_id = ?
+    SELECT u.id, u.username, 'Admin' AS role
+    FROM users u
+    WHERE u.id = (SELECT owner_id FROM projects WHERE id = ?)
+    UNION
+    SELECT u.id, u.username, pm.role
+    FROM project_members pm
+    JOIN users u ON pm.user_id = u.id
+    WHERE pm.project_id = ?
 ");
-$stmt->bind_param("i", $project_id);
+$stmt->bind_param("ii", $project_id, $project_id);
 $stmt->execute();
 $members_result = $stmt->get_result();
 $members = $members_result->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
+
+// Doing a check to see if a user is an admin or not. Currently just for hiding my delete button from non-admins but may be for other uses in the future
+$is_admin = false;
+foreach ($members as $m) {
+    if ($m['id'] == $user_id && $m['role'] === 'Admin') {
+        $is_admin = true;
+        break;
+    }
+}
 
 // Pull comments for tasks in this project
 $stmt = $connection->prepare("
@@ -139,7 +152,10 @@ foreach ($comments_raw as $comment) {
                     <td><?php echo htmlspecialchars($task['due_date'] ?? ''); ?></td>
                     <td>
                         <a href="edit_task.php?id=<?php echo $task['id']; ?>">Edit</a>
-                        <a href="delete_task.php?id=<?php echo $task['id']; ?>&project_id=<?php echo $project_id; ?>">Delete</a>
+                        <!-- Hides the delete button if they are not an admin -->
+                        <?php if ($is_admin): ?>
+                         <a href="delete_task.php?id=<?php echo $task['id']; ?>&project_id=<?php echo $project_id; ?>">Delete</a>
+                        <?php endif; ?>
                     </td>
                     <td>
                         <?php if (!empty($comments[$task['id']])): ?>
@@ -169,7 +185,7 @@ foreach ($comments_raw as $comment) {
 <h2>Project Members</h2>
 <ul>
 <?php foreach ($members as $member): ?>
-    <li><?php echo htmlspecialchars($member['username']); ?></li>
+<li><?php echo htmlspecialchars($member['username'] . " (" . $member['role'] . ")"); ?></li>
 <?php endforeach; ?>
 </ul>
 
