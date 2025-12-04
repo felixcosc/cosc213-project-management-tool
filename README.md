@@ -83,5 +83,6 @@ email: admin@example.com
 password: pass123
 ```
 ### Final Notes
-* Please contact me if you have any issues
+* Please contact me at iamahzoolah@gmail.com if you have any issues
 * I used OpenAI for assistance on structuring this README.md file to make sure I was not missing anything, all of my writing and wording is my own
+
